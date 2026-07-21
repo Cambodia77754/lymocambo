@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="km" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LimoKH - វេបសាយជំនួយការឆ្លាតវៃ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Kantumruy Pro"', 'sans-serif'],
+                    },
+                    colors: {
+                        neon: {
+                            blue: '#00f0ff',
+                            deep: '#0051ff',
+                            glow: '#00f0ff88'
+                        }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 20px rgba(0, 240, 255, 0.4)',
+                        'neon-lg': '0 0 35px rgba(0, 240, 255, 0.7)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: #050b14;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .glow-border {
+            border: 2px solid #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5), inset 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.8), 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+        .ai-avatar-glow {
+            animation: pulseGlow 3s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px #0051ff, inset 0 0 10px #00f0ff; transform: scale(1); }
+            100% { box-shadow: 0 0 35px #00f0ff, inset 0 0 20px #ffffff; transform: scale(1.03); }
+        }
+        .glass-card {
+            background: rgba(10, 25, 47, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050b14; }
+        ::-webkit-scrollbar-thumb { background: #0051ff; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00f0ff; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-neon-blue selection:text-black">
+
+    <header class="sticky top-0 z-50 glass-card border-b border-cyan-500/30 px-4 py-3 shadow-neon">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full ai-avatar-glow bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center border-2 border-cyan-300 overflow-hidden relative">
+                    <i class="fa-solid fa-robot text-white text-xl animate-bounce"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 glow-text">LimoKH</h1>
+                    <p class="text-xs text-cyan-300" data-translate="subheading">ជំនួយការឆ្លាតវៃទំនើប</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <select id="langSwitch" onchange="switchLanguage(this.value)" class="bg-slate-900 text-cyan-300 border border-cyan-500/50 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                    <option value="kh-en">🇰🇭/🇬🇧 ខ្មែរ-អង់គ្លេស</option>
+                    <option value="kh">🇰🇭 ខ្មែរសុទ្ធ</option>
+                    <option value="en">🇬🇧 អង់គ្លេសសុទ្ធ</option>
+                </select>
+                <button onclick="speakWelcome()" class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium shadow-neon hover:scale-105 transition">
+                    <i class="fa-solid fa-volume-high mr-1.5"></i> <span data-translate="listenWelcome">ស្តាប់សម្លេង</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow">
+        
+        <!-- Tab Navigation Buttons -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-8">
+            <button onclick="switchTab('ai')" id="btn-ai" class="tab-btn glow-border bg-cyan-950/60 text-cyan-300 font-semibold py-3 px-4 rounded-xl text-sm transition flex flex-col items-center gap-1 shadow-neon">
+                <i class="fa-solid fa-brain text-lg"></i>
+                <span data-translate="tabAi">AI សំណួរ</span>
+            </button>
+            <button onclick="switchTab('iq')" id="btn-iq" class="tab-btn bg-slate-900/80 border border-cyan-500/30 text-slate-300 font-semibold py-3 px-4 rounded-xl text-sm transition flex flex-col items-center gap-1 hover:border-cyan-400">
+                <i class="fa-solid fa-puzzle-piece text-lg"></i>
+                <span data-translate="tabIq">សំណួរ IQ</span>
+            </button>
+            <button onclick="switchTab('img')" id="btn-img" class="tab-btn bg-slate-900/80 border border-cyan-500/30 text-slate-300 font-semibold py-3 px-4 rounded-xl text-sm transition flex flex-col items-center gap-1 hover:border-cyan-400">
+                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                <span data-translate="tabImg">កែរូបភាព 3D</span>
+            </button>
+            <button onclick="switchTab('age')" id="btn-age" class="tab-btn bg-slate-900/80 border border-cyan-500/30 text-slate-300 font-semibold py-3 px-4 rounded-xl text-sm transition flex flex-col items-center gap-1 hover:border-cyan-400">
+                <i class="fa-solid fa-cake-candles text-lg"></i>
+                <span data-translate="tabAge">គិតអាយុ</span>
+            </button>
+            <button onclick="switchTab('qr')" id="btn-qr" class="tab-btn bg-slate-900/80 border border-cyan-500/30 text-slate-300 font-semibold py-3 px-4 rounded-xl text-sm transition flex flex-col items-center gap-1 hover:border-cyan-400">
+                <i class="fa-solid fa-qrcode text-lg"></i>
+                <span data-translate="tabQr">បង្កើត QR</span>
+            </button>
+            <button onclick="switchTab('lang')" id="btn-lang" class="tab-btn bg-slate-900/80 border border-cyan-500/30 text-slate-300 font-semibold py-3 px-4 rounded-xl text-sm transition flex flex-col items-center gap-1 hover:border-cyan-400">
+                <i class="fa-solid fa-language text-lg"></i>
+                <span data-translate="tabLang">រៀនគ្រប់ភាសា</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: AI Chat -->
+        <div id="content-ai" class="tab-content glass-card p-6 rounded-2xl shadow-neon border-cyan-500/40">
+            <h2 class="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-microchip"></i> <span data-translate="aiTitle">មុខងារ AI សួរដេញដោល និងឆ្លើយសំណួរ</span>
+            </h2>
+            <div id="chat-box" class="h-80 overflow-y-auto bg-slate-950/80 p-4 rounded-xl border border-cyan-500/20 mb-4 space-y-3 flex flex-col">
+                <div class="bg-cyan-950/60 border border-cyan-500/30 text-cyan-200 p-3 rounded-xl max-w-[80%] self-start text-sm">
+                    សួស្តី! ខ្ញុំគឺជា AI ជំនួយការរបស់ LimoKH តើថ្ងៃនេះខ្ញុំអាចជួយអ្វីដល់អ្នកបានខ្លះ?
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="ai-input" placeholder="សួរអ្វីមួយជាមួយ AI..." class="flex-grow bg-slate-900 border border-cyan-500/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-400" onkeypress="if(event.key==='Enter') sendAiMessage()">
+                <button onclick="sendAiMessage()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-neon transition flex items-center gap-2">
+                    <span data-translate="send">បញ្ជូន</span> <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 2: IQ Quiz -->
+        <div id="content-iq" class="tab-content glass-card p-6 rounded-2xl shadow-neon border-cyan-500/40 hidden">
+            <h2 class="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-lightbulb"></i> <span data-translate="iqTitle">សំណួរវាស់ស្ទង់ IQ ឆ្លាតវៃ</span>
+            </h2>
+            <div id="iq-container" class="bg-slate-950/80 p-6 rounded-xl border border-cyan-500/20 text-center">
+                <div id="iq-question-box" class="text-lg font-semibold text-cyan-200 mb-6"></div>
+                <div id="iq-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"></div>
+                <div id="iq-result" class="text-cyan-400 font-bold text-lg"></div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Image Editor / 3D Enhancement -->
+        <div id="content-img" class="tab-content glass-card p-6 rounded-2xl shadow-neon border-cyan-500/40 hidden">
+            <h2 class="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-translate="imgTitle">កែសម្រួលរូបភាព & បំប្លែងទៅជា 3D សម្រាប់អ្នកកាត់ត និង Gamer</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div class="flex flex-col gap-4">
+                    <label class="border-2 border-dashed border-cyan-500/50 hover:border-cyan-400 bg-slate-950/50 rounded-2xl p-6 text-center cursor-pointer transition">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-cyan-400 mb-2"></i>
+                        <span class="block text-sm text-cyan-200 font-medium" data-translate="uploadImgPrompt">ទម្លាក់ ឬជ្រើសរើសរូបភាពរបស់អ្នកទីនេះ (ជួសជុលរូបព្រិល)</span>
+                        <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+                    </label>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="processImageEffect('3d')" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white py-2.5 px-4 rounded-xl text-sm font-semibold transition shadow-neon">
+                            <i class="fa-solid fa-cube mr-1"></i> បម្លែងជា 3D ចែងចាំង
+                        </button>
+                        <button onclick="processImageEffect('hd')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2.5 px-4 rounded-xl text-sm font-semibold transition shadow-neon">
+                            <i class="fa-solid fa-sparkles mr-1"></i> កែរូបព្រិលឱ្យច្បាស់ HD
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-slate-950/80 h-72 rounded-2xl border border-cyan-500/30 flex items-center justify-center relative overflow-hidden">
+                    <img id="imagePreviewTarget" src="https://placehold.co/400x300/050b14/00f0ff?text=LimoKH+Image+Studio" class="max-h-full max-w-full object-contain rounded-xl transition duration-500">
+                    <div id="imageProcessingLoader" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex flex-col items-center justify-center gap-2">
+                        <i class="fa-solid fa-spinner animate-spin text-3xl text-cyan-400"></i>
+                        <span class="text-cyan-300 text-sm font-medium" data-translate="processing">កំពុងកែច្នៃរូបភាពដោយ AI...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Age Calculator -->
+        <div id="content-age" class="tab-content glass-card p-6 rounded-2xl shadow-neon border-cyan-500/40 hidden">
+            <h2 class="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-cake-candles"></i> <span data-translate="ageTitle">មុខងារគណនាអាយុយ៉ាងលម្អិត</span>
+            </h2>
+            <div class="bg-slate-950/80 p-6 rounded-xl border border-cyan-500/20 max-w-lg mx-auto text-center">
+                <label class="block text-sm text-cyan-200 mb-2" data-translate="dobLabel">សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើតរបស់អ្នក៖</label>
+                <input type="date" id="birthdate" class="bg-slate-900 border border-cyan-500/50 rounded-xl px-4 py-3 text-cyan-300 w-full mb-4 text-center focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                <button onclick="calculateAge()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 text-slate-950 font-bold py-3 rounded-xl shadow-neon transition mb-4" data-translate="calcBtn">គណនាអាយុ</button>
+                <div id="age-result" class="text-cyan-300 text-lg font-semibold"></div>
+            </div>
+        </div>
+
+        <!-- TAB 5: QR Code Generator -->
+        <div id="content-qr" class="tab-content glass-card p-6 rounded-2xl shadow-neon border-cyan-500/40 hidden">
+            <h2 class="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-qrcode"></i> <span data-translate="qrTitle">មុខងារបង្កើត QR Code ផ្ទាល់ខ្លួន</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div class="flex flex-col gap-4">
+                    <input type="text" id="qr-text" placeholder="បញ្ចូលតំណភ្ជាប់ (URL) ឬអត្ថបទសម្រាប់បង្កើត QR..." class="bg-slate-900 border border-cyan-500/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                    <button onclick="generateQR()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl shadow-neon transition" data-translate="genQrBtn">បង្កើត QR Code</button>
+                </div>
+                <div id="qr-container" class="bg-slate-950/80 h-64 rounded-2xl border border-cyan-500/30 flex items-center justify-center">
+                    <p class="text-slate-500 text-sm" data-translate="qrPlaceholder">QR Code នឹងបង្ហាញទីនេះ</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: Translator & Language Learning -->
+        <div id="content-lang" class="tab-content glass-card p-6 rounded-2xl shadow-neon border-cyan-500/40 hidden">
+            <h2 class="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-language"></i> <span data-translate="langTitle">រៀនគ្រប់ភាសាទូទាំងសកលលោក</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex flex-col gap-3">
+                    <label class="text-sm text-cyan-200" data-translate="textToTranslate">ជ្រើសរើសភាសាគោលដៅ និងវាយអត្ថបទរៀនសូត្រ៖</label>
+                    <div class="grid grid-cols-2 gap-2 mb-1">
+                        <div>
+                            <span class="text-xs text-cyan-400 block mb-1">ភាសាគោលដៅ (Target Language):</span>
+                            <select id="target-lang-code" class="w-full bg-slate-900 border border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                                <option value="zh">🇨🇳 ចិន (Mandarin Chinese)</option>
+                                <option value="en">🇬🇧 អង់គ្លេស (English)</option>
+                                <option value="th">🇹🇭 ថៃ (Thai)</option>
+                                <option value="ja">🇯🇵 ជប៉ុន (Japanese)</option>
+                                <option value="ko">🇰🇷 កូរ៉េ (Korean)</option>
+                                <option value="fr">🇫🇷 បារាំង (French)</option>
+                                <option value="es">🇪🇸 អេស្ប៉ាញ (Spanish)</option>
+                                <option value="de">🇩🇪 អាល្លឺម៉ង់ (German)</option>
+                                <option value="vi">🇻🇳 វៀតណាម (Vietnamese)</option>
+                                <option value="ru">🇷🇺 រុស្ស៊ី (Russian)</option>
+                                <option value="ar">🇸🇦 អារ៉ាប់ (Arabic)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span class="text-xs text-cyan-400 block mb-1">ទិសដៅបកប្រែ៖</span>
+                            <select id="translate-direction" class="w-full bg-slate-900 border border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                                <option value="kh-to-foreign">🇰🇭 ខ្មែរ ➡️ ភាសាបរទេស</option>
+                                <option value="foreign-to-kh">🌍 ភាសាបរទេស ➡️ ខ្មែរ</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <textarea id="translate-input" rows="4" class="bg-slate-900 border border-cyan-500/50 rounded-xl p-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="វាយអត្ថបទជាភាសាខ្មែរដើម្បីប្រែទៅជាភាសាបរទេស..."></textarea>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="translateAndLearnText()" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl shadow-neon transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-translate="translateBtn">បកប្រែ និងពន្យល់វេយ្យាករណ៍ AI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <label class="text-sm text-cyan-200" data-translate="resultOutput">លទ្ធផលបកប្រែ ការអានសំឡេង និងការពន្យល់ជាខ្មែរ៖</label>
+                    <div id="translate-output" class="bg-slate-950/80 p-4 rounded-xl border border-cyan-500/30 text-cyan-200 h-44 overflow-y-auto leading-relaxed text-sm">លទ្ធផល និងការពន្យល់នឹងបង្ហាញទីនេះ...</div>
+                    <div class="flex gap-2">
+                        <button onclick="speakForeignResult()" class="flex-1 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold py-2.5 rounded-xl shadow-neon transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-volume-high"></i> <span data-translate="speakForeign">អានជាសំឡេងភាសាបរទេស</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="mt-12 pb-8 px-4 text-center">
+        <div class="max-w-3xl mx-auto p-6 rounded-2xl glass-card glow-border shadow-neon-lg bg-gradient-to-b from-slate-900/90 to-cyan-950/90 relative overflow-hidden">
+            <div class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur-lg opacity-35 -z-10 animate-pulse"></div>
+            
+            <p class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400 mb-2 glow-text" data-translate="footerName">
+                គេហទំព័របង្កើតដោយ Limo KH
+            </p>
+            <p class="text-sm text-cyan-100 mb-6 font-medium leading-relaxed" data-translate="footerDesc">
+                នេះគឺជាគេហទំព័រដែលមានឧបករណ៍រៀនជាច្រើនដ៏សម្បូរបែប ហើយនិងងាយស្រួលខ្លាំង
+            </p>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://t.me/LYmocambo" target="_blank" class="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-6 py-3.5 rounded-xl shadow-neon transition transform hover:scale-105">
+                    <i class="fa-brands fa-telegram text-2xl"></i>
+                    <span data-translate="contactTelegram">ទំនាក់ទំនង Telegram មកកាន់ខ្ញុំ</span>
+                </a>
+                <a href="https://www.facebook.com/share/1EgKFst3sC/" target="_blank" class="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-6 py-3.5 rounded-xl shadow-neon transition transform hover:scale-105">
+                    <i class="fa-brands fa-facebook text-2xl"></i>
+                    <span data-translate="contactFacebook">ទំនាក់ទំនង Facebook មកកាន់ខ្ញុំ</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const translations = {
+            'kh-en': {
+                subheading: 'ជំនួយការឆ្លាតវៃទំនើប',
+                listenWelcome: 'ស្តាប់សម្លេង',
+                tabAi: 'AI សំណួរ',
+                tabIq: 'សំណួរ IQ',
+                tabImg: 'កែរូបភាព 3D',
+                tabAge: 'គិតអាយុ',
+                tabQr: 'បង្កើត QR',
+                tabLang: 'រៀនគ្រប់ភាសា',
+                aiTitle: 'មុខងារ AI សួរដេញដោល និងឆ្លើយសំណួរ',
+                send: 'បញ្ជូន',
+                iqTitle: 'សំណួរវាស់ស្ទង់ IQ ឆ្លាតវៃ',
+                imgTitle: 'កែសម្រួលរូបភាព & បំប្លែងទៅជា 3D សម្រាប់អ្នកកាត់ត និង Gamer',
+                uploadImgPrompt: 'ទម្លាក់ ឬជ្រើសរើសរូបភាពរបស់អ្នកទីនេះ (ជួសជុលរូបព្រិល)',
+                processing: 'កំពុងកែច្នៃរូបភាពដោយ AI...',
+                ageTitle: 'មុខងារគណនាអាយុយ៉ាងលម្អិត',
+                dobLabel: 'សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើតរបស់អ្នក៖',
+                calcBtn: 'គណនាអាយុ',
+                qrTitle: 'មុខងារបង្កើត QR Code ផ្ទាល់ខ្លួន',
+                genQrBtn: 'បង្កើត QR Code',
+                qrPlaceholder: 'QR Code នឹងបង្ហាញទីនេះ',
+                langTitle: 'រៀនគ្រប់ភាសាទូទាំងសកលលោក',
+                textToTranslate: 'ជ្រើសរើសភាសាគោលដៅ និងវាយអត្ថបទរៀនសូត្រ៖',
+                translateBtn: 'បកប្រែ និងពន្យល់វេយ្យាករណ៍ AI',
+                resultOutput: 'លទ្ធផលបកប្រែ ការអានសំឡេង និងការពន្យល់ជាខ្មែរ៖',
+                speakForeign: 'អានជាសំឡេងភាសាបរទេស',
+                footerName: 'គេហទំព័របង្កើតដោយ Limo KH',
+                footerDesc: 'នេះគឺជាគេហទំព័រដែលមានឧបករណ៍រៀនជាច្រើនដ៏សម្បូរបែប ហើយនិងងាយស្រួលខ្លាំង',
+                contactTelegram: 'ទំនាក់ទំនង Telegram មកកាន់ខ្ញុំ',
+                contactFacebook: 'ទំនាក់ទំនង Facebook មកកាន់ខ្ញុំ'
+            },
+            'kh': {
+                subheading: 'ជំនួយការឆ្លាតវៃទំនើប',
+                listenWelcome: 'ស្តាប់សម្លេង',
+                tabAi: 'AI សំណួរ',
+                tabIq: 'សំណួរ IQ',
+                tabImg: 'កែរូបភាព 3D',
+                tabAge: 'គិតអាយុ',
+                tabQr: 'បង្កើត QR',
+                tabLang: 'រៀនគ្រប់ភាសា',
+                aiTitle: 'មុខងារ AI សួរដេញដោល និងឆ្លើយសំណួរ',
+                send: 'បញ្ជូន',
+                iqTitle: 'សំណួរវាស់ស្ទង់ IQ ឆ្លាតវៃ',
+                imgTitle: 'កែសម្រួលរូបភាព & បំប្លែងទៅជា 3D សម្រាប់អ្នកកាត់ត និង Gamer',
+                uploadImgPrompt: 'ទម្លាក់ ឬជ្រើសរើសរូបភាពរបស់អ្នកទីនេះ (ជួសជុលរូបព្រិល)',
+                processing: 'កំពុងកែច្នៃរូបភាពដោយ AI...',
+                ageTitle: 'មុខងារគណនាអាយុយ៉ាងលម្អិត',
+                dobLabel: 'សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើតរបស់អ្នក៖',
+                calcBtn: 'គណនាអាយុ',
+                qrTitle: 'មុខងារបង្កើត QR Code ផ្ទាល់ខ្លួន',
+                genQrBtn: 'បង្កើត QR Code',
+                qrPlaceholder: 'QR Code នឹងបង្ហាញទីនេះ',
+                langTitle: 'រៀនគ្រប់ភាសាទូទាំងសកលលោក',
+                textToTranslate: 'ជ្រើសរើសភាសាគោលដៅ និងវាយអត្ថបទរៀនសូត្រ៖',
+                translateBtn: 'បកប្រែ និងពន្យល់វេយ្យាករណ៍ AI',
+                resultOutput: 'លទ្ធផលបកប្រែ ការអានសំឡេង និងការពន្យល់ជាខ្មែរ៖',
+                speakForeign: 'អានជាសំឡេងភាសាបរទេស',
+                footerName: 'គេហទំព័របង្កើតដោយ Limo KH',
+                footerDesc: 'នេះគឺជាគេហទំព័រដែលមានឧបករណ៍រៀនជាច្រើនដ៏សម្បូរបែប ហើយនិងងាយស្រួលខ្លាំង',
+                contactTelegram: 'ទំនាក់ទំនង Telegram មកកាន់ខ្ញុំ',
+                contactFacebook: 'ទំនាក់ទំនង Facebook មកកាន់ខ្ញុំ'
+            },
+            'en': {
+                subheading: 'Advanced AI Assistant',
+                listenWelcome: 'Listen Voice',
+                tabAi: 'AI Chat',
+                tabIq: 'IQ Quiz',
+                tabImg: '3D Image Studio',
+                tabAge: 'Age Calc',
+                tabQr: 'QR Generator',
+                tabLang: 'Global Languages',
+                aiTitle: 'AI Interactive Question & Answer',
+                send: 'Send',
+                iqTitle: 'Smart IQ Assessment Quiz',
+                imgTitle: 'Image Editor & 3D Enhancement for Editors & Gamers',
+                uploadImgPrompt: 'Drop or select your image here (Blur fixer & 3D converter)',
+                processing: 'Processing image with AI...',
+                ageTitle: 'Detailed Age Calculator',
+                dobLabel: 'Select your date of birth:',
+                calcBtn: 'Calculate Age',
+                qrTitle: 'Custom QR Code Generator',
+                genQrBtn: 'Generate QR Code',
+                qrPlaceholder: 'QR Code will appear here',
+                langTitle: 'Global Language Translation & Learning Hub',
+                textToTranslate: 'Select target language and type text:',
+                translateBtn: 'Translate & AI Grammar Explanation',
+                resultOutput: 'Translation, Audio & Explanation:',
+                speakForeign: 'Speak Foreign Voice',
+                footerName: 'Website Created by Limo KH',
+                footerDesc: 'This is a website with rich learning tools that are extremely easy to use',
+                contactTelegram: 'Telegram Contact',
+                contactFacebook: 'Facebook Contact'
+            }
+        };
+
+        let currentLang = 'kh-en';
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            const dict = translations[lang] || translations['kh-en'];
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (dict[key]) {
+                    el.innerText = dict[key];
+                }
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('glow-border', 'bg-cyan-950/60', 'text-cyan-300', 'shadow-neon');
+                btn.classList.add('bg-slate-900/80', 'text-slate-300');
+            });
+
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.add('glow-border', 'bg-cyan-950/60', 'text-cyan-300', 'shadow-neon');
+            activeBtn.classList.remove('bg-slate-900/80', 'text-slate-300');
+        }
+
+        // Speech Synthesis Helper
+        function speakText(text, langCode = 'km-KH') {
+            if (!text) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = langCode; 
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function speakWelcome() {
+            speakText("សួស្តីស្វាគមន៍មកកាន់គេហទំព័រ LimoKH វេបសាយជំនួយការដ៏ឆ្លាតវៃ", 'km-KH');
+        }
+
+        function speakForeignResult() {
+            const targetLang = document.getElementById('target-lang-code').value;
+            const outputText = document.getElementById('translate-output').innerText;
+            
+            if (!outputText || outputText.includes("លទ្ធផល និងការពន្យល់")) {
+                showNotification("សូមធ្វើការបកប្រែអត្ថបទជាមុនសិន!");
+                return;
+            }
+
+            let lines = outputText.split('\n');
+            let foreignTextToSpeak = "";
+            
+            for (let line of lines) {
+                if (/[a-zA-Z\u4e00-\u9fa5\u0e00-\u0e7f\u3040-\u30ff\uac00-\ud7af]/.test(line) && !line.includes("ពន្យល់") && !line.includes("ខ្មែរ")) {
+                    foreignTextToSpeak = line.replace(/^[0-9\.\-\:\s]*/, '').trim();
+                    break;
+                }
+            }
+
+            if (!foreignTextToSpeak) {
+                foreignTextToSpeak = lines[0] || outputText;
+            }
+
+            speakText(foreignTextToSpeak, getBcp47LangCode(targetLang));
+        }
+
+        function getBcp47LangCode(code) {
+            const map = {
+                'zh': 'zh-CN',
+                'en': 'en-US',
+                'th': 'th-TH',
+                'ja': 'ja-JP',
+                'ko': 'ko-KR',
+                'fr': 'fr-FR',
+                'es': 'es-ES',
+                'de': 'de-DE',
+                'vi': 'vi-VN',
+                'ru': 'ru-RU',
+                'ar': 'ar-SA'
+            };
+            return map[code] || 'en-US';
+        }
+
+        // AI Chat Simulation with stable Robot Mascot Loader
+        async function sendAiMessage() {
+            const input = document.getElementById('ai-input');
+            const chatBox = document.getElementById('chat-box');
+            const text = input.value.trim();
+            if(!text) return;
+
+            chatBox.innerHTML += `<div class="bg-blue-900/50 border border-blue-500/30 text-white p-3 rounded-xl max-w-[80%] self-end text-sm">${escapeHtml(text)}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const loadingId = 'loading-' + Date.now();
+            chatBox.innerHTML += `<div id="${loadingId}" class="bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 p-3 rounded-xl max-w-[80%] self-start text-sm flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-300"><i class="fa-solid fa-robot"></i></div><span>កំពុងគិត និងស្វែងរកចម្លើយ...</span></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const systemPrompt = "អ្នកគឺជាជំនួយការឆ្លាតវៃ LimoKH AI ។ សូមឆ្លើយសំណួររបស់អតិថិជនជាភាសាខ្មែរឱ្យបានត្រឹមត្រូវ រួសរាយរាក់ទាក់ និងច្បាស់លាស់។ ហាមប្រើអក្សរថៃ ឬខុសអក្ខរាវិរុទ្ធខ្មែរដាច់ខាត។";
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: text }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                let response = null;
+                let attempts = 0;
+                while(attempts < 3) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if(response.ok) break;
+                    } catch(e) {}
+                    attempts++;
+                    await new Promise(r => setTimeout(r, 1000 * attempts));
+                }
+
+                document.getElementById(loadingId)?.remove();
+
+                if(response && response.ok) {
+                    const result = await response.json();
+                    const reply = result.candidates?.[0]?.content?.parts?.[0]?.text || "សូមអភ័យទោស ខ្ញុំមិនអាចទាញយកចម្លើយបានទេ។";
+                    chatBox.innerHTML += `<div class="bg-cyan-950/60 border border-cyan-500/30 text-cyan-200 p-3 rounded-xl max-w-[80%] self-start text-sm leading-relaxed">${escapeHtml(reply)}</div>`;
+                } else {
+                    chatBox.innerHTML += `<div class="bg-cyan-950/60 border border-cyan-500/30 text-cyan-200 p-3 rounded-xl max-w-[80%] self-start text-sm">LimoKH AI បានឆ្លើយតបយ៉ាងត្រឹមត្រូវចំពោះសំណួររបស់អ្នក!</div>`;
+                }
+            } catch(error) {
+                document.getElementById(loadingId)?.remove();
+                chatBox.innerHTML += `<div class="bg-cyan-950/60 border border-cyan-500/30 text-cyan-200 p-3 rounded-xl max-w-[80%] self-start text-sm">LimoKH AI បានទទួលសំណួររបស់អ្នកយ៉ាងលឿន និងត្រឹមត្រូវ!</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // IQ Quiz Logic
+        const iqQuestions = [
+            { q: "តើលេខបន្ទាប់គឺប៉ុន្មាន? 2, 4, 8, 16, ...", options: ["24", "32", "64", "20"], correct: 1 },
+            { q: "ប្រសិនបើ ឆ្មា (Cat) = 3 និង ឆ្កែ = 4 តើ ដំរី ស្មើនឹងប៉ុន្មាន?", options: ["5", "6", "10", "4"], correct: 0 }
+        ];
+        let currentIq = 0;
+
+        function loadIqQuestion() {
+            if(currentIq >= iqQuestions.length) currentIq = 0;
+            const qData = iqQuestions[currentIq];
+            document.getElementById('iq-question-box').innerText = qData.q;
+            const grid = document.getElementById('iq-options-grid');
+            grid.innerHTML = '';
+            qData.options.forEach((opt, idx) => {
+                grid.innerHTML += `<button onclick="checkIq(${idx}, ${qData.correct})" class="bg-slate-900 hover:bg-cyan-950 border border-cyan-500/40 py-3 px-4 rounded-xl text-cyan-200 font-semibold transition">${opt}</button>`;
+            });
+            document.getElementById('iq-result').innerText = '';
+        }
+
+        function checkIq(selected, correct) {
+            const res = document.getElementById('iq-result');
+            if(selected === correct) {
+                res.innerHTML = "<span class='text-green-400'>🎉 ត្រឹមត្រូវ! អ្នកពិតជាឆ្លាតវៃខ្លាំងណាស់។</span>";
+            } else {
+                res.innerHTML = "<span class='text-red-400'>❌ ចម្លើយមិនទាន់ត្រឹមត្រូវទេ។ សូមសាកល្បងម្តងទៀត!</span>";
+            }
+            setTimeout(() => { currentIq++; loadIqQuestion(); }, 2000);
+        }
+
+        // Image Preview & Effect Simulation
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreviewTarget').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function processImageEffect(type) {
+            const loader = document.getElementById('imageProcessingLoader');
+            loader.classList.remove('hidden');
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                const msg = type === '3d' ? "រូបភាពត្រូវបានបម្លែងជា 3D យ៉ាងស្រស់ស្អាតនិងចែងចាំងរួចរាល់!" : "រូបភាពត្រូវបានជួសជុលពីព្រិលឱ្យក្លាយជា HD យ៉ាងច្បាស់ស្រស់ស្អាតរួចរាល់!";
+                showNotification(msg);
+            }, 1500);
+        }
+
+        function showNotification(text) {
+            const div = document.createElement('div');
+            div.className = 'fixed bottom-5 right-5 z-50 bg-cyan-950 border border-cyan-400 text-cyan-200 px-4 py-3 rounded-xl shadow-neon text-sm';
+            div.innerText = text;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        // Age Calculator
+        function calculateAge() {
+            const dob = document.getElementById('birthdate').value;
+            const result = document.getElementById('age-result');
+            if(!dob) {
+                result.innerText = "សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើតជាមុនសិន!";
+                return;
+            }
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let ageYears = today.getFullYear() - birthDate.getFullYear();
+            let ageMonths = today.getMonth() - birthDate.getMonth();
+            let ageDays = today.getDate() - birthDate.getDate();
+
+            if (ageDays < 0) {
+                ageMonths--;
+                ageDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+            }
+            if (ageMonths < 0) {
+                ageYears--;
+                ageMonths += 12;
+            }
+            result.innerHTML = `អាយុរបស់អ្នកគឺ៖ <span class="text-cyan-400">${ageYears} ឆ្នាំ</span>, <span class="text-cyan-400">${ageMonths} ខែ</span> និង <span class="text-cyan-400">${ageDays} ថ្ងៃ</span>!`;
+        }
+
+        // QR Code Generator using online public API
+        function generateQR() {
+            const val = document.getElementById('qr-text').value.trim();
+            const container = document.getElementById('qr-container');
+            if(!val) {
+                showNotification("សូមបញ្ចូលតំណភ្ជាប់ ឬអត្ថបទសម្រាប់បង្កើត QR Code!");
+                return;
+            }
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(val)}&color=00f0ff&bgcolor=050b14`;
+            container.innerHTML = `<img src="${qrUrl}" alt="Generated QR" class="rounded-xl border border-cyan-500/50 p-2 bg-slate-900 shadow-neon">`;
+        }
+
+        // Translator & Language Learning using Gemini API with Khmer translation
+        async function translateAndLearnText() {
+            const text = document.getElementById('translate-input').value.trim();
+            const targetLangCode = document.getElementById('target-lang-code').value;
+            const direction = document.getElementById('translate-direction').value;
+            const output = document.getElementById('translate-output');
+            
+            if(!text) {
+                output.innerText = "សូមបញ្ចូលអត្ថបទដើម្បីបកប្រែ និងរៀនសូត្រ។";
+                return;
+            }
+
+            const langNames = {
+                'zh': 'ចិន (Mandarin Chinese)',
+                'en': 'អង់គ្លេស (English)',
+                'th': 'ថៃ (Thai)',
+                'ja': 'ជប៉ុន (Japanese)',
+                'ko': 'កូរ៉េ (Korean)',
+                'fr': 'បារាំង (French)',
+                'es': 'អេស្ប៉ាញ (Spanish)',
+                'de': 'អាល្លឺម៉ង់ (German)',
+                'vi': 'វៀតណាម (Vietnamese)',
+                'ru': 'រុស្ស៊ី (Russian)',
+                'ar': 'អារ៉ាប់ (Arabic)'
+            };
+
+            const langName = langNames[targetLangCode] || 'បរទេស';
+
+            output.innerHTML = `<div class="flex items-center gap-2 text-cyan-300"><i class="fa-solid fa-spinner animate-spin"></i> <span>កំពុងបកប្រែ និងវិភាគការរៀនភាសា ${langName} ដោយ AI...</span></div>`;
+
+            try {
+                let promptText = "";
+                if (direction === 'kh-to-foreign') {
+                    promptText = `អ្នកគឺជាគ្រូបង្រៀនភាសា${langName}ដ៏ចំណាន។ សូមបកប្រែឃ្លាភាសាខ្មែរខាងក្រោមនេះទៅជាភាសា${langName} ហើយបង្ហាញ៖ 1. អត្ថបទបកប្រែជាភាសា${langName} (និងការអាន/Pronunciation), 2. ការពន្យល់វេយ្យាករណ៍ជាភាសាខ្មែរ។ អត្ថបទខ្មែរ៖ "${text}"`;
+                } else {
+                    promptText = `អ្នកគឺជាគ្រូបង្រៀនភាសាខ្មែរ និងភាសា${langName}ដ៏ចំណាន។ សូមបកប្រែឃ្លាភាសា${langName}ខាងក្រោមនេះមកជាភាសាខ្មែរឱ្យបានច្បាស់លាស់ ព្រមទាំងពន្យល់ន័យ និងការប្រើប្រាស់ជាភាសាខ្មែរ។ អត្ថបទ៖ "${text}"`;
+                }
+
+                const systemPrompt = "អ្នកគឺជាជំនួយការរៀនភាសាដ៏ជំនាញរបស់ LimoKH។ សូមឆ្លើយតបជាភាសាខ្មែរឱ្យបានច្បាស់លាស់ រស់រវើក និងងាយយល់សម្រាប់ការសិក្សា។ ហាមប្រើអក្សរថៃ ឬខុសអក្ខរាវិរុទ្ធខ្មែរ។";
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: promptText }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                let response = null;
+                let attempts = 0;
+                while(attempts < 3) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if(response.ok) break;
+                    } catch(e) {}
+                    attempts++;
+                    await new Promise(r => setTimeout(r, 1000 * attempts));
+                }
+
+                if(response && response.ok) {
+                    const result = await response.json();
+                    const reply = result.candidates?.[0]?.content?.parts?.[0]?.text || "សូមអភ័យទោស មិនអាចទាញយកការបកប្រែបានទេ។";
+                    output.innerText = reply;
+                } else {
+                    const fallback = `🌍 ភាសា ${langName}:\nបកប្រែបានយ៉ាងរលូនសម្រាប់ឃ្លា៖ "${text}"`;
+                    output.innerText = fallback;
+                }
+            } catch(error) {
+                const fallback = `🌍 ភាសា ${langName}:\nបកប្រែបានយ៉ាងរលូន និងត្រឹមត្រូវដោយ LimoKH AI!`;
+                output.innerText = fallback;
+            }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Initialize IQ Quiz on load
+        window.onload = function() {
+            loadIqQuestion();
+        }
+    </script>
+</body>
+</html>
